@@ -29,3 +29,31 @@ cap = cv2.VideoCapture(0)  # Use 1 if you have an external cam
 cap.set(3, 1280)     #width
 cap.set(4, 720)      #height
 cap.set(10, 70)      #brightness
+
+# Run detection loop
+while True:
+    success, img = cap.read()
+    classIds, confs, bbox = net.detect(img, confThreshold=thres)
+    print(classIds, bbox)
+
+    if len(classIds) != 0:
+        for classId, confidence, box in zip(classIds.flatten(), confs.flatten(), bbox):
+
+            # Check to avoid index error
+            if classId < len(classNames):
+                label = classNames[classId-1].upper()
+            else:
+                label = f"{classId}: {classNames[classId-1].upper()}"  # fallback label
+
+            cv2.rectangle(img, box, color=(0, 255, 0), thickness=2)
+            cv2.putText(img, label, (box[0]+10, box[1]+30),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(img, f'{round(confidence * 100, 2)}%',
+                    (box[0]+10, box[1]+60),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+
+
+    cv2.imshow('Output', img)
+    cv2.waitKey(1)
+
+print("Server is running")
